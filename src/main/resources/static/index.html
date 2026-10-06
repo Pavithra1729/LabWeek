@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🐞 BugBot — Jira Board</title>
+  <style>
+    :root { --accent:#5B5FC7; --danger:#D13438; --bg:#faf9f8; --card:#fff; --line:#e6e4e2; --muted:#616161; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"Segoe UI",system-ui,sans-serif; background:var(--bg); color:#242424; }
+    .wrap { max-width:1100px; margin:0 auto; padding:20px; }
+    header { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+    h1 { font-size:24px; margin:0; }
+    .subtle { color:var(--muted); font-size:13px; }
+    button { margin-left:auto; background:var(--accent); color:#fff; border:0; border-radius:6px; padding:8px 14px; cursor:pointer; font-size:13px; }
+    .summary { background:#eef0ff; border:1px solid #d7dafc; border-radius:10px; padding:14px 16px; margin:14px 0 24px; }
+    .summary div { padding:3px 0; font-size:15px; }
+    .board { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; }
+    .col h2 { font-size:15px; display:flex; align-items:center; gap:8px; border-bottom:2px solid var(--line); padding-bottom:8px; }
+    .pill { background:#e8e8e8; border-radius:10px; padding:2px 8px; font-size:12px; font-weight:600; }
+    .pill.danger { background:#fde7e9; color:var(--danger); }
+    .ticket { background:var(--card); border:1px solid var(--line); border-left:4px solid #bdbdbd; border-radius:8px; padding:12px; margin:10px 0; }
+    .ticket.high { border-left-color:var(--danger); }
+    .key { font-weight:700; }
+    .meta { color:var(--muted); font-size:12px; margin-top:6px; }
+    .labels { margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; }
+    .label { background:#f0f0f0; border-radius:4px; padding:2px 6px; font-size:11px; color:#555; }
+    .actions { margin-top:10px; display:flex; gap:8px; }
+    .actions a { font-size:12px; text-decoration:none; border-radius:6px; padding:4px 10px; }
+    .a-jira { color:var(--accent); border:1px solid var(--accent); }
+    .a-code { background:var(--accent); color:#fff; }
+    .err { color:var(--danger); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🐞 BugBot — Jira Board</h1>
+      <span class="subtle" id="count">loading…</span>
+      <button onclick="load()">↻ Refresh</button>
+    </header>
+    <section class="summary" id="summary"></section>
+    <div class="board" id="board"></div>
+  </div>
+
+  <script>
+    // Served from the same origin as the API, so relative URL works.
+    const API = "/api/dashboard";
+
+    async function load() {
+      const board = document.getElementById("board");
+      const summary = document.getElementById("summary");
+      try {
+        const res = await fetch(API);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const d = await res.json();
+
+        document.getElementById("count").textContent =
+          d.totalActive + " active tickets · updated " + new Date(d.generatedAt).toLocaleTimeString();
+
+        summary.innerHTML = d.standupBullets
+          .map(b => `<div>${b.replace(/^-\s*/, "• ")}</div>`).join("");
+
+        board.innerHTML = d.roleGroups.map(g => `
+          <div class="col">
+            <h2>${g.role}
+              <span class="pill">${g.total}</span>
+              ${g.highSeverity > 0 ? `<span class="pill danger">${g.highSeverity} high-sev</span>` : ""}
+            </h2>
+            ${g.tickets.map(t => `
+              <div class="ticket ${t.highSeverity ? "high" : ""}">
+                <div><span class="key">${t.highSeverity ? "🔴 " : "⚪ "}${t.key}</span> — ${t.summary}</div>
+                <div class="meta">${t.status} · ${t.priority} · ${t.issueType} · ${t.assignee}</div>
+                <div class="labels">${(t.labels||[]).map(l => `<span class="label">${l}</span>`).join("")}</div>
+                <div class="actions">
+                  <a class="a-jira" href="${t.jiraUrl}" target="_blank" rel="noreferrer">Open in Jira</a>
+                  <a class="a-code" href="${t.vsCodeDeepLink}">Open in VS Code</a>
+                </div>
+              </div>`).join("")}
+          </div>`).join("");
+      } catch (e) {
+        summary.innerHTML = `<span class="err">Failed to load board: ${e.message}. Is the backend running on this port?</span>`;
+        board.innerHTML = "";
+      }
+    }
+    load();
+  </script>
+</body>
+</html>
+

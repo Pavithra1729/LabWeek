@@ -1,0 +1,58 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.17",
+  "version": "1.0.0",
+  "id": "REPLACE-WITH-YOUR-APP-GUID",
+  "developer": {
+    "name": "Your Team",
+    "websiteUrl": "https://example.com",
+    "privacyUrl": "https://example.com/privacy",
+    "termsOfUseUrl": "https://example.com/terms"
+  },
+  "name": {
+    "short": "BugBot",
+    "full": "BugBot – Smart Jira Standup Dashboard"
+  },
+  "description": {
+    "short": "LLM-summarised Jira standup inside Teams.",
+    "full": "An LLM + MCP powered dashboard that summarises active Jira tickets into a daily standup, groups them by role, and lets you run ChatOps commands."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#D13438",
+  "staticTabs": [
+    {
+      "entityId": "bugbot-dashboard",
+      "name": "Standup",
+      "contentUrl": "https://your-tab-host.example.com/index.html",
+      "scopes": ["personal", "groupChat", "team"]
+    }
+  ],
+  "bots": [
+    {
+      "botId": "REPLACE-WITH-YOUR-BOT-APP-ID",
+      "scopes": ["personal", "team", "groupChat"],
+      "supportsFiles": false,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": ["personal", "team", "groupChat"],
+          "commands": [
+            { "title": "status", "description": "Get a ticket status: status JIRA-123" },
+            { "title": "update", "description": "Move a ticket: update JIRA-123 In Review" },
+            { "title": "comment", "description": "Comment on a ticket: comment JIRA-123 <text>" },
+            { "title": "summary", "description": "Post the daily standup summary" }
+          ]
+        }
+      ]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": [
+    "your-tab-host.example.com",
+    "your-org.atlassian.net"
+  ]
+}
+

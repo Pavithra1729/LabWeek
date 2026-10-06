@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: bugbot
+
+# ---------------------------------------------------------------------------
+# BugBot configuration. Prefer environment variables for all secrets.
+# e.g. export BUGBOT_JIRA_APITOKEN=... ; export BUGBOT_LLM_APIKEY=...
+# ---------------------------------------------------------------------------
+bugbot:
+  jira:
+    base-url: ${BUGBOT_JIRA_BASEURL:https://your-org.atlassian.net}
+    email: ${BUGBOT_JIRA_EMAIL:you@your-org.com}
+    api-token: ${BUGBOT_JIRA_APITOKEN:}
+    project-key: ${BUGBOT_JIRA_PROJECT:QA}
+    # Leave blank to use the built-in default ("everything not Done").
+    board-jql: ${BUGBOT_JIRA_JQL:}
+
+  llm:
+    base-url: ${BUGBOT_LLM_BASEURL:https://api.openai.com/v1}
+    api-key: ${BUGBOT_LLM_APIKEY:}
+    model: ${BUGBOT_LLM_MODEL:gpt-4o-mini}
+    # When false (or no api-key set), BugBot uses a deterministic fallback summary.
+    enabled: ${BUGBOT_LLM_ENABLED:false}
+
+  links:
+    # Base URI VS Code understands. Point this at the dev's local checkout.
+    repo-root-uri: ${BUGBOT_REPO_ROOT:vscode://file//Users/you/project}
+    # Your Teams app id (GUID from the manifest) for deep links back into the tab.
+    teams-app-id: ${BUGBOT_TEAMS_APP_ID:}
+
+logging:
+  level:
+    org.example.bugbot: INFO
+
